@@ -8,43 +8,33 @@ app.use(express.json());
 // Student details
 const DETAILS = {
   fullName: "borra_ani",
-  dob: "16032004", // ddmmyyyy
+  dob: "16032004",
   email: "ani.22bcb7283@vitapstudent.ac.in",
   roll: "22BCB7283"
 };
 
-// Utility: alternate caps in reverse order
+// Helper: alternating caps in reverse order
 function alternatingCapsReverse(str) {
-  let output = "";
+  let result = "";
   let toggle = true;
-
   for (let i = str.length - 1; i >= 0; i--) {
     const ch = str[i];
     if (/[a-zA-Z]/.test(ch)) {
-      output += toggle ? ch.toUpperCase() : ch.toLowerCase();
+      result += toggle ? ch.toUpperCase() : ch.toLowerCase();
       toggle = !toggle;
     }
   }
-  return output;
+  return result;
 }
 
-// API endpoint
 app.post("/bfhl", (req, res) => {
   const { data } = req.body;
-
   if (!Array.isArray(data)) {
-    return res.status(400).json({
-      is_success: false,
-      error: "Expected 'data' as an array"
-    });
+    return res.status(400).json({ is_success: false, error: "Expected array" });
   }
 
-  const odd = [];
-  const even = [];
-  const alphabets = [];
-  const specials = [];
-  let sum = 0;
-  let alphaString = "";
+  const odd = [], even = [], alphabets = [], specials = [];
+  let sum = 0, alphaString = "";
 
   for (const item of data) {
     if (/^-?\d+$/.test(item)) {
@@ -66,19 +56,12 @@ app.post("/bfhl", (req, res) => {
     roll_number: DETAILS.roll,
     odd_numbers: odd,
     even_numbers: even,
-    alphabets: alphabets,
+    alphabets,
     special_characters: specials,
     sum: String(sum),
     concat_string: alternatingCapsReverse(alphaString)
   });
 });
 
-// Default route
-app.get("/", (req, res) => {
-  res.send("Full Stack API is running. Use POST /bfhl");
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Server started on port ${PORT}`);
-});
+// 👇 Export handler for Vercel
+export default app;
