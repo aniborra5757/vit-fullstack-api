@@ -1,85 +1,60 @@
 import express from "express";
-import cors from "cors";
-import app from "./api/bfhl.js";
 
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 3000;
+
 app.use(express.json());
 
-// Student details
-const DETAILS = {
-  fullName: "borra_ani",
-  dob: "16032004", // ddmmyyyy
-  email: "ani.22bcb7283@vitapstudent.ac.in",
-  roll: "22BCB7283"
-};
+const FULL_NAME = "borra_ani";
+const DOB = "16032004"; // ddmmyyyy
+const EMAIL = "ani.22bcb7283@vitapstudent.ac.in";
+const ROLL_NUMBER = "22BCB7283";
 
-// Utility: alternate caps in reverse order
-function alternatingCapsReverse(str) {
-  let output = "";
-  let toggle = true;
+// GET endpoint
+app.get("/bfhl", (req, res) => {
+  res.json({ operation_code: 1 });
+});
 
-  for (let i = str.length - 1; i >= 0; i--) {
-    const ch = str[i];
-    if (/[a-zA-Z]/.test(ch)) {
-      output += toggle ? ch.toUpperCase() : ch.toLowerCase();
-      toggle = !toggle;
-    }
-  }
-  return output;
-}
-
-// API endpoint
+// POST endpoint
 app.post("/bfhl", (req, res) => {
   const { data } = req.body;
-
-  if (!Array.isArray(data)) {
-    return res.status(400).json({
-      is_success: false,
-      error: "Expected 'data' as an array"
-    });
+  if (!data || !Array.isArray(data)) {
+    return res.status(400).json({ error: "Invalid input" });
   }
 
-  const odd = [];
-  const even = [];
+  const odd_numbers = [];
+  const even_numbers = [];
   const alphabets = [];
-  const specials = [];
+  const special_characters = [];
   let sum = 0;
-  let alphaString = "";
 
-  for (const item of data) {
-    if (/^-?\d+$/.test(item)) {
+  data.forEach((item) => {
+    if (!isNaN(item)) {
       const num = parseInt(item, 10);
+      if (num % 2 === 0) even_numbers.push(item);
+      else odd_numbers.push(item);
       sum += num;
-      (num % 2 === 0 ? even : odd).push(item);
-    } else if (/^[a-zA-Z]+$/.test(item)) {
+    } else if (/^[a-zA-Z]$/.test(item)) {
       alphabets.push(item.toUpperCase());
-      alphaString += item;
     } else {
-      specials.push(item);
+      special_characters.push(item);
     }
-  }
+  });
 
   res.json({
     is_success: true,
-    user_id: `${DETAILS.fullName}_${DETAILS.dob}`,
-    email: DETAILS.email,
-    roll_number: DETAILS.roll,
-    odd_numbers: odd,
-    even_numbers: even,
-    alphabets: alphabets,
-    special_characters: specials,
-    sum: String(sum),
-    concat_string: alternatingCapsReverse(alphaString)
+    user_id: `${FULL_NAME}_${DOB}`,
+    email: EMAIL,
+    roll_number: ROLL_NUMBER,
+    odd_numbers,
+    even_numbers,
+    alphabets,
+    special_characters,
+    sum: sum.toString(),
+    concat_string: alphabets.sort().join(""),
   });
 });
 
-// Default route
-app.get("/", (req, res) => {
-  res.send("Full Stack API is running. Use POST /bfhl");
-});
-
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Server started on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
